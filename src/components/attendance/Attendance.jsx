@@ -1,15 +1,24 @@
-import React, { useState } from 'react';
-import { attendanceColumns, attendanceRows } from '../../attendanceDataSource';
+import React, { useState, useEffect } from 'react';
+import { attendanceColumns } from '../../attendanceDataSource';
 import { Link } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
-import './attendance.scss'
+import './attendance.scss';
+import { fetchUserData, submitAttendance } from '../../api';
 
 const Attendance = () => {
-  const [data, setData] = useState(attendanceRows);
+  const [data, setData] = useState([]);
+  const [userData, setUserData] = useState([]);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+
+  useEffect(() => {
+    fetchUserData()
+      .then(data => setUserData(data))
+      .catch(error => console.error('Error fetching user data:', error));
+  }, []);
 
   const handleQuickSubmitChange = (event) => {
     const selectedOption = event.target.value;
-
     if (selectedOption === 'allpresent') {
       const updatedData = data.map((row) => ({ ...row, attendance: 'present' }));
       setData(updatedData);
@@ -26,10 +35,16 @@ const Attendance = () => {
     setData(updatedData);
   };
 
-  const handleSubmit = () => {
-    // Code to submit the attendance data to the backend
-    console.log('Submitting attendance data:', data);
-    // Replace the above console.log with your backend submission code
+  const handleSubmit = async () => {
+    try {
+      await submitAttendance(data);
+      setShowSuccessPopup(true);
+      setTimeout(() => setShowSuccessPopup(false), 3000); // Hide the success popup after 3 seconds
+    } catch (error) {
+      console.error('Error submitting attendance data:', error);
+      setShowErrorPopup(true);
+      setTimeout(() => setShowErrorPopup(false), 3000); // Hide the error popup after 3 seconds
+    }
   };
 
   const actionColumn = [
@@ -38,15 +53,16 @@ const Attendance = () => {
       headerName: "Action",
       width: 200,
       renderCell: (params) => {
+        const user = userData.find(u => u.useremail === params.row.useremail);
+
         return (
           <div className="cellAction">
-            <Link to="/users/test" style={{ textDecoration: "none" }}>
+            <Link to={`/users/${user ? user.username : ''}`} style={{ textDecoration: "none" }}>
               <div className="viewButton">View</div>
             </Link>
             <div className="attendanceMark">
               <select
                 name="option"
-                id="optionBox"
                 value={params.row.attendance}
                 onChange={(event) => handleCellChange(params, event.target.value)}
               >
@@ -62,10 +78,12 @@ const Attendance = () => {
 
   return (
     <div className="datatable">
+      {showSuccessPopup && <div className="popup success">Data submitted successfully!</div>}
+      {showErrorPopup && <div className="popup error">Error submitting data. Please try again.</div>}
       <div className="datatableTitle">
         Attendance Roll
         <div className="submitform">
-          <label className=" quicksubmit" htmlFor="optionbox">Quick Submit</label>
+          <label className="quicksubmit" htmlFor="optionbox">Quick Submit</label>
           <select className="listform" name="option" id="optionBox" onChange={handleQuickSubmitChange}>
             <option value="">Select</option>
             <option value="allpresent">All Present</option>
@@ -73,7 +91,6 @@ const Attendance = () => {
           </select>
           <button className='formbutton' onClick={handleSubmit}>Submit</button>
         </div>
-        
       </div>
       <DataGrid
         className="datagrid"
