@@ -1,0 +1,28 @@
+.AnnouncementPopup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 20px;
+    z-index: 1000;
+    width: 400px;
+  }
+  
+  .AnnouncementPopup .closeButton {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    color: #666;
+  }
+  
+  .AnnouncementPopup h2 {
+    margin-bottom: 10px;
+  }
+  
+  .AnnouncementPopup p {
+    margin-bottom: 15px;
+  }
+  

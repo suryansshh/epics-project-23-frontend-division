@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import "./sidebar.scss";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import CorporateFareOutlinedIcon from '@mui/icons-material/CorporateFareOutlined';
@@ -13,10 +13,19 @@ import SettingsSystemDaydreamOutlinedIcon from "@mui/icons-material/SettingsSyst
 import PsychologyOutlinedIcon from "@mui/icons-material/PsychologyOutlined";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Import useHistory hook
+
 function Sidebar() {
+  const navigation = useNavigate(); // Get the history object
+
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Clear the token from localStorage
+    navigation('/login'); // Redirect the user to the login page
+  }
+
   return (
     <div className="sidebar">
-    <div className="top">
+      <div className="top">
         <Link to="/" style={{ textDecoration: "none" }}>
           <span className="logo">staff.io</span>
         </Link>
@@ -77,12 +86,10 @@ function Sidebar() {
             <AccountCircleOutlinedIcon className="icon" />
             <span>Profile</span>
           </li>
-          <Link to="/login">
-          <li>
+          <li onClick={handleLogout}> {/* Add onClick event handler */}
             <ExitToAppIcon className="icon" />
             <span>Logout</span>
           </li>
-          </Link>
         </ul>
       </div>
       <div className="bottom">
@@ -95,8 +102,8 @@ function Sidebar() {
           onClick={() => dispatch({ type: "DARK" })}
         ></div> */}
       </div>
-      </div>
-  )
+    </div>
+  );
 }
 
-export default Sidebar
+export default Sidebar;
