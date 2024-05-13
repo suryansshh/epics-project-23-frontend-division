@@ -1,26 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { attendanceColumns } from '../../attendanceDataSource';
-import { Link, useNavigate } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
 import './attendance.scss';
-import { fetchUserMetrics,addAttendance } from '../../api';
-import Loading from 'react-loading'; 
+import { fetchUserMetrics, addAttendance } from '../../api';
+import Loading from 'react-loading';
 
 const Attendance = () => {
   const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true); // State variable for loading
+  const [loading, setLoading] = useState(true);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showErrorPopup, setShowErrorPopup] = useState(false);
-  const [apiResponse, setApiResponse] = useState(null);
-  const navigate = useNavigate();
-
-  const handleViewUser = (userId) => {
-    if (apiResponse && apiResponse.users) {
-      navigate('/users', { state: { userId, users: apiResponse.users } });
-    } else {
-      console.error('User data not found');
-    }
-  };
+  const [submittedData, setSubmittedData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,28 +29,32 @@ const Attendance = () => {
             username: record.username,
             useremail: record.useremail,
             department: record.department,
-            attendance: record.status || '',
+            attendance: record.status,
             userId: record.userId,
           }));
 
           setData(attendanceData);
-          setApiResponse(response);
-          setLoading(false); // Update loading state after data is fetched
+          setLoading(false);
         } else {
           console.error('JWT token not found in localStorage');
         }
       } catch (error) {
         console.error('Error fetching attendance data:', error);
         setData([]);
-        setApiResponse(null);
-        setLoading(false); // Update loading state in case of error
+        setLoading(false);
       }
     };
     fetchData();
   }, []);
-  
-  
-  
+
+  const getFormattedDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleQuickSubmitChange = (event) => {
     const selectedOption = event.target.value;
     if (selectedOption === 'allpresent') {
@@ -73,26 +67,57 @@ const Attendance = () => {
   };
 
   const handleCellChange = (params, newValue) => {
-    const updatedData = [...data];
-    const rowIndex = params.row.id;
-    if (updatedData[rowIndex]) { // Check if row exists
-      updatedData[rowIndex].attendance = newValue;
-      setData(updatedData);
-    } else {
-      console.error('Row does not exist:', rowIndex);
-    }
-  };
+    const { row } = params;
+    const updatedRow = {
+      ...row,
+      attendance: newValue,
+      date: getFormattedDate(),
+    };
   
-
+    setData((prevData) => {
+      const updatedData = [...prevData];
+      const rowIndex = params.row.id;
+      if (updatedData[rowIndex]) {
+        updatedData[rowIndex] = updatedRow;
+      } else {
+        console.error('Row does not exist:', rowIndex);
+      }
+      return updatedData;
+    });
+  
+    setSubmittedData((prevSubmittedData) => {
+      const updatedSubmittedData = [...prevSubmittedData];
+      const existingRowIndex = updatedSubmittedData.findIndex((row) => row.id === params.row.id);
+  
+      if (existingRowIndex !== -1) {
+        updatedSubmittedData[existingRowIndex] = updatedRow;
+      } else {
+        updatedSubmittedData.push(updatedRow);
+      }
+  
+      return updatedSubmittedData;
+    });
+  };
   const handleSubmit = async () => {
     try {
       await Promise.all(
-        data.map(async (attendanceData) => {
-          await addAttendance(attendanceData);
+        submittedData.map(async (attendanceData) => {
+          const { date, username, useremail, department, attendance: status } = attendanceData;
+
+          const requestBody = {
+            date,
+            username,
+            useremail,
+            department,
+            status,
+          };
+
+          await addAttendance(requestBody);
         })
       );
       setShowSuccessPopup(true);
       setTimeout(() => setShowSuccessPopup(false), 3000);
+      setSubmittedData([]); // Reset the submittedData array
     } catch (error) {
       console.error('Error submitting attendance data:', error);
       setShowErrorPopup(true);
@@ -105,44 +130,46 @@ const Attendance = () => {
       field: 'action',
       headerName: 'Action',
       width: 200,
-      renderCell: (params) => (
-        <div className="cellAction">
-          <div className="viewButton" onClick={() => handleViewUser(params.row)}>
-            View
+      renderCell: (params) => {
+        const rowIndex = params.row.id;
+        const rowData = data.find((row) => row.id === rowIndex);
+        const attendance = rowData ? rowData.attendance : '';
+  
+        return (
+          <div className="cellAction">
+            <div className="attendanceMark">
+              <select
+                name="option"
+                value={attendance}
+                onChange={(event) => handleCellChange(params, event.target.value)}
+              >
+                <option value="present">Present</option>
+                <option value="absent">Absent</option>
+              </select>
+            </div>
           </div>
-
-          <div className="attendanceMark">
-            <select
-              name="option"
-              value={params.row.attendance}
-              onChange={(event) => handleCellChange(params, event.target.value)}
-            >
-              <option value="present">Present</option>
-              <option value="absent">Absent</option>
-            </select>
-          </div>
-        </div>
-      ),
+        );
+      },
     },
   ];
-  
 
   return (
     <div className="datatable">
-      {loading && ( // Display loading animation if loading is true
+      {loading && (
         <div className="loading">
           <Loading type={'spin'} color={'#000000'} height={'20px'} width={'20px'} />
         </div>
       )}
       {showSuccessPopup && <div className="popup success">Data submitted successfully!</div>}
       {showErrorPopup && <div className="popup error">Error submitting data. Please try again.</div>}
-      {/* Render data grid only if loading is false */}
       {!loading && (
         <>
           <div className="datatableTitle">
             Attendance Roll
             <div className="submitform">
-              {/* Rest of the component code... */}
+              <button className="formbutton" onClick={handleSubmit}>
+                Submit
+              </button>
             </div>
           </div>
           <DataGrid

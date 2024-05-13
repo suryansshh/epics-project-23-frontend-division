@@ -86,17 +86,24 @@ export const addUser = async (userData) => {
 
 export const addAttendance = async (attendanceData) => {
   try {
-    const token = getToken(); // Get the JWT token from localStorage
-
-    // Set the Authorization header with the JWT token
+    const token = getToken();
     axiosInstance.defaults.headers.common['Authorization'] = `${token}`;
 
-    const response = await axiosInstance.post('/user/addAttendance', attendanceData);
+    const { date, username, useremail, department, attendance: status } = attendanceData;
+
+    const requestBody = {
+      date,
+      username,
+      useremail,
+      department,
+      status,
+    };
+
+    const response = await axiosInstance.post('/user/addAttendance', requestBody);
     return response.data;
   } catch (error) {
     throw new Error(error.response.data.message);
   } finally {
-    // Remove the Authorization header after the request is completed
     delete axiosInstance.defaults.headers.common['Authorization'];
   }
 };
