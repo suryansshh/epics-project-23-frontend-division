@@ -1,5 +1,5 @@
-import React from 'react'
-import './home.scss'
+import React, { useState } from 'react';
+import './home.scss';
 
 import Sidebar from './../../components/sidebar/Sidebar';
 import Navbar from '../../components/navbar/Navbar';
@@ -9,42 +9,63 @@ import Features from '../../components/featured/Features';
 import Chart from '../../components/chart/Charts';
 import EventIcon from '@mui/icons-material/Event';
 import Events from '../../components/table/Events';
+import AnnouncementPopup from './../home/AnnouncementPopup';
+import TaskPopup from './../home/TaskPopup'; // Import TaskPopup component
 
 const Home = () => {
-    return (
-      <div className="home">
-        <Sidebar />
-        
-         <div className="homeContainer">
-          <Navbar />
-          <div className="widgets">
-            <Widget type="user" />
-            <LongWidget  />
-          </div>
-          <div className="charts">
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isTaskPopupOpen, setIsTaskPopupOpen] = useState(false); // State for task popup
+
+  const handleOpenPopup = () => {
+    setIsPopupOpen(true);
+  };
+
+  const handleClosePopup = () => {
+    setIsPopupOpen(false);
+  };
+
+  const handleOpenTaskPopup = () => { // Function to open task popup
+    setIsTaskPopupOpen(true);
+  };
+
+  const handleCloseTaskPopup = () => { // Function to close task popup
+    setIsTaskPopupOpen(false);
+  };
+
+  return (
+    <div className="home">
+      <Sidebar />
+      <div className="homeContainer">
+        <Navbar />
+        <div className="widgets">
+          <Widget type="user" />
+          <LongWidget />
+        </div>
+        <div className="charts">
           <Features />
           <Chart title="Last 6 Months (Performance)" aspect={2 / 1} />
+        </div>
+        <div className="listContainer">
+          <div className="listTitle">
+            <div>
+              Upcoming Events <EventIcon className="eventIcon" fontSize="small" />
+            </div>
+            {/* Add Announcement Button */}
+            <div >
+            <button onClick={handleOpenPopup} className="add-announcement-btn">
+              Add Announcement
+            </button>
+            {/* Add Task Button */}
+            <button onClick={handleOpenTaskPopup} className="add-task-btn">Add Event</button>
+            </div>
           </div>
-          <div className='listContainer'>
-            <div className="listTitle">Upcoming Events <EventIcon className='eventIcon' fontSize='small'/></div>
-            <Events/>
-          </div>
-
-          </div>
-         
-         
-          
-          {/*<div className="charts">
-            <Featured />
-            <Chart title="Last 6 Months (Revenue)" aspect={2 / 1} />
-          </div>
-          <div className="listContainer">
-            <div className="listTitle">Latest Transactions</div>
-            <Table />
-          </div>
-        </div> */}
+          <Events />
+        </div>
       </div>
-    );
-  };
-  
-  export default Home;
+      <AnnouncementPopup isOpen={isPopupOpen} onClose={handleClosePopup} />
+      <TaskPopup isOpen={isTaskPopupOpen} onClose={handleCloseTaskPopup} /> {/* Render TaskPopup */}
+    </div>
+  );
+};
+
+export default Home;

@@ -1,104 +1,65 @@
-import React from 'react'
-import "./events.scss"
+import React, { useState, useEffect } from 'react';
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-
-
+import { fetchUserMetrics } from '../../api';
+import Loading from 'react-loading'; // Import the Loading component
+import './events.scss'; // Assuming you have a separate CSS file for styling
 
 const Events = () => {
-    const data = [
-        {   "id":"1",
-            "Event": "Team Building Workshop",
-            "date": "2024-03-15",
-            "Department": "Human Resources",
-            "Status": "Pending"
-        },
-        {   
-            "id":"2",
-            "Event": "Quarterly Review Meeting",
-            "date": "2024-03-20",
-            "Department": "Operations",
-            "Status": "Finished"
-        },
-        {   "id":"3",
-            "Event": "Training Session on New Software",
-            "date": "2024-03-25",
-            "Department": "Information Technology",
-            "Status": "Pending"
-        },
-        {   "id":"4",
-            "Event": "Staff Birthday Celebration",
-            "date": "2024-04-02",
-            "Department": "Administration",
-            "Status": "Finished"
-        },
-        {   "id":"5",
-            "Event": "Employee Recognition Awards",
-            "date": "2024-04-10",
-            "Department": "Human Resources",
-            "Status": "Finished"
-        },
-        {   "id":"6",
-            "Event": "Monthly Team Meeting",
-            "date": "2024-04-15",
-            "Department": "Marketing",
-            "Status": "Finished"
-        },
-        {   "id":"7",
-            "Event": "Sales Training Workshop",
-            "date": "2024-04-25",
-            "Department": "Sales",
-            "Status": "Pending"
-        },
-        {   "id":"8",
-            "Event": "Project Kickoff Meeting",
-            "date": "2024-05-05",
-            "Department": "Project Management",
-            "Status": "Finished"
-        },
-        {   "id":"9",
-            "Event": "Annual Retreat",
-            "date": "2024-05-20",
-            "Department": "Operations",
-            "Status": "Finished"
-        },
-        {   "id":"10",
-            "Event": "Company Town Hall",
-            "date": "2024-06-01",
-            "Department": "Executive",
-            "Status": "Finished"
-        }
-    
-    ];
-    return (
+  const [tasksData, setTasksData] = useState([]);
+  const [loading, setLoading] = useState(true); // State variable for loading
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const metricsData = await fetchUserMetrics();
+        // Assuming the tasks data is stored in the 'tasks' attribute of the metricsData
+        setTasksData(metricsData.task_metrics.tasks || []);
+        setLoading(false); // Update loading state after data is fetched
+      } catch (error) {
+        console.error('Error fetching tasks data:', error);
+        setLoading(false); // Update loading state in case of error
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return (
+    <div className="events-container"> {/* Add a wrapper container for styling */}
+      {loading ? ( // Display loading animation if loading is true
+        <div className="loading-container">
+          <Loading type={'spin'} color={'#000000'} height={'20px'} width={'20px'} />
+        </div>
+      ) : (
         <TableContainer component={Paper} className="table">
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead>
               <TableRow className='mainRow'>
-              <TableCell className="tableCell">Id</TableCell>
-                <TableCell className="tableCell">Events</TableCell>
+                <TableCell className="tableCell">Id</TableCell>
+                <TableCell className="tableCell">Description</TableCell>
                 <TableCell className="tableCell">Date</TableCell>
                 <TableCell className="tableCell">Department</TableCell>
                 <TableCell className="tableCell">Status</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.map((row) => (
-                <TableRow key={row.id} >
-                  <TableCell className="tableCell">{row.id}</TableCell>
-                  <TableCell className="tableCell">{row.Event}</TableCell>
-                  <TableCell className="tableCell">{row.date}</TableCell>
-                  <TableCell className="tableCell">{row.Department}</TableCell>
-                  
+              {tasksData.map((task) => (
+                <TableRow key={task._id} >
+                  <TableCell className="tableCell">{task._id}</TableCell>
+                  <TableCell className="tableCell">{task.description}</TableCell>
+                  <TableCell className="tableCell">{task.date}</TableCell>
+                  <TableCell className="tableCell">{task.department}</TableCell>
                   <TableCell className="tableCell value">
-                    <span className={`status ${row.Status}`}>{row.Status}</span>
+                    <span className={`status ${task.status}`}>{task.status}</span>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
-      );
-    
-}
+      )}
+    </div>
+  );
+};
 
-export default Events
+export default Events;
