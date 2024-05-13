@@ -32,7 +32,7 @@ function Login() {
       const data = await loginUser(userData);
       if (data.token) {
         localStorage.setItem('token', data.token);
-        navigate('/');
+        navigate('/home');
       } else {
         setError(data.error || 'Login failed. Please check your email and password.');
       }
@@ -52,7 +52,7 @@ function Login() {
       const data = await registerUser(userData);
       if (data.token) {
         localStorage.setItem('token', data.token);
-        navigate('/');
+        navigate('/home');
       } else {
         setError(data.error || 'Registration failed. Please try again.');
       }
