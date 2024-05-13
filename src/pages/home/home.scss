@@ -11,7 +11,7 @@
       height: 100vh;
 
       
-  
+      
       .widgets,
       .charts {
         display: flex;
@@ -30,9 +30,36 @@
         margin: 20px;
   
         .listTitle {
+          display: flex;
+          justify-content: space-between;
           font-weight: 500;
           color: gray;
           margin-bottom: 15px;
+          .add-announcement-btn{
+            font-weight: 600;
+            color:rgb(137, 43, 226) ;
+            border-radius: 20px;
+            padding: 10px;
+            border: none;
+            box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.21);
+           
+          }
+          .add-announcement-btn:hover{
+            background-color: rgba(137, 43, 226, 0.368);
+          }
+          .add-task-btn{
+            font-weight: 600;
+            color:rgb(137, 43, 226) ;
+            margin-left: 20px;
+            border-radius: 20px;
+            padding: 10px;
+            border: none;
+            box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.21);
+           
+          }
+          .add-task-btn:hover{
+            background-color: rgba(137, 43, 226, 0.368);
+          }
         }
       }
     }

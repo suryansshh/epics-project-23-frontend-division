@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import * as Components from './Components';
 import './login.scss';
-import { loginUser, registerUser } from '../../api'; // Import loginUser and registerUser functions
+import { loginUser, registerUser } from '../../api';
+import Loading from 'react-loading'; // Import Loading component from react-loading
 
 function Login() {
-  const navigate = useNavigate(); // Use useNavigate hook
+  const navigate = useNavigate();
   const [signIn, setSignIn] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); // State to track loading state
   const [error, setError] = useState('');
 
   const handleToggle = (value) => {
@@ -24,23 +26,27 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-  try {
-    const userData = { email, password };
-    const data = await loginUser(userData);
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-      navigate('/');
-    } else {
-      setError(data.error || 'Login failed. Please check your email and password.');
+    setLoading(true); // Set loading state to true during login
+    try {
+      const userData = { email, password };
+      const data = await loginUser(userData);
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        navigate('/');
+      } else {
+        setError(data.error || 'Login failed. Please check your email and password.');
+      }
+    } catch (error) {
+      console.error(error);
+      setError('An error occurred. Please try again later.');
+    } finally {
+      setLoading(false); // Reset loading state after login attempt
     }
-  } catch (error) {
-    console.error(error);
-    setError('An error occurred. Please try again later.');
-  }
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setLoading(true); // Set loading state to true during registration
     try {
       const userData = { name, email, password };
       const data = await registerUser(userData);
@@ -53,6 +59,8 @@ function Login() {
     } catch (error) {
       console.error(error);
       setError('An error occurred. Please try again later.');
+    } finally {
+      setLoading(false); // Reset loading state after registration attempt
     }
   };
 
@@ -81,7 +89,9 @@ function Login() {
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
               />
-              <Components.Button type="submit">Sign Up</Components.Button>
+              <Components.Button type="submit">
+                {loading ? <Loading type={'spin'} color={'#ffffff'} height={'20px'} width={'20px'} /> : 'Sign Up'}
+              </Components.Button>
               {error && <div className="error">{error}</div>}
             </Components.Form>
           </Components.SignUpContainer>
@@ -102,7 +112,9 @@ function Login() {
                 onChange={(e) => setPassword(e.target.value)} 
               />
               <Components.Anchor href="#">Forgot your password?</Components.Anchor>
-              <Components.Button type="submit">Sign In</Components.Button>
+              <Components.Button type="submit">
+                {loading ? <Loading type={'spin'} color={'#ffffff'} height={'20px'} width={'20px'} /> : 'Sign In'}
+              </Components.Button>
               {error && <div className="error">{error}</div>}
             </Components.Form>
           </Components.SignInContainer>
