@@ -14,7 +14,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route
-            path="/"
+            path="*"
             element={isAuthenticated ? <AuthenticatedRoutes /> : <Navigate to="/login" />}
           />
           <Route path="attendance" element={<AttendanceList />} />
