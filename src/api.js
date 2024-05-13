@@ -24,16 +24,19 @@ const removeAuthorizationHeader = () => {
 };
 
 // Register a new admin user
+
+
+// Login an existing user
 export const registerUser = async (userData) => {
   try {
     const response = await axiosInstance.post('/auth/register', userData);
+    setToken(response.data.token); // Store the JWT token in localStorage
+    setAuthorizationHeader(response.data.token); // Set the Authorization header with the JWT token
     return response.data;
   } catch (error) {
     throw new Error(error.response.data.message);
   }
 };
-
-// Login an existing user
 export const loginUser = async (credentials) => {
   try {
     const response = await axiosInstance.post('/auth/login', credentials);
